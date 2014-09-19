@@ -8,23 +8,24 @@ from multiprocessing import Process, Queue
 
 #UART.setup("UART4")
 
-#Use port /dev/ttyUSB0 for laptop
-#Use port /dev/ttyO4 for BeagleBone Black
+# Initialize serial port
+# Use port /dev/ttyUSB0 for serial USB connection on laptop
+# Use port /dev/ttyO4 for BeagleBone Black
 ser = serial.Serial(port = "/dev/ttyUSB0", baudrate=115200, 
 parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, 
 bytesize=serial.EIGHTBITS, timeout=0, xonxoff=0, rtscts=0)
 
-#Sets the IMU to continuously send Euler Angle and Angular Rate Data
-def set_continuous_euler_ang():
+# Sets the IMU to continuously send Euler Angle and Angular Rate Data
+def set_continuous_euler_ang(serial_port):
 	command = "\xC4"
 	confirm1 = "\xC1"
 	confirm2 = "\x29"
 	euler_ang = "\xCF"
 	
-	ser.write(command)
-	ser.write(confirm1)
-	ser.write(confirm2)
-	ser.write(euler_ang)	
+	serial_port.write(command)
+	serial_port.write(confirm1)
+	serial_port.write(confirm2)
+	serial_port.write(euler_ang)	
 
 def bit_check(a):
 	c = ""
@@ -39,29 +40,35 @@ def imu_convert(a):
 	d = struct.unpack('!f', a.decode('hex'))[0]
 	return d
 
-#Checks if data packet has a valid check sum
-def valid_check_sum(a):
+# Checks if data has a valid check sum
+# Precondition: data is a string containing 31 bytes
+# Return: True if valid, False if invalid
+def valid_check_sum(data):
 	b = 0
 	for x in range(0, 29):
-		b = ord(a[x])+b
+		b = ord(data[x])+b
 
-	c = hex(ord(a[29])).lstrip("0x") or "0"
-	d = hex(ord(a[30])).lstrip("0x") or "0"
+	c = hex(ord(data[29])).lstrip("0x") or "0"
+	d = hex(ord(data[30])).lstrip("0x") or "0"
 	e = int(c+d, 16)
 	return (e==b)
 
-def write_data(queue):
+# Puts data from IMU onto queue as a tuple of (time,data)
+# Precondition: queue is from multiprocessing.Queue
+def write_data(serial_port, queue):
 	initial_time = time.time()
-	if ser.isOpen():
+	if serial_port.isOpen():
 		print "Serial Status: Open"
 		while True:
-			while ser.inWaiting() < 31:
+			while serial_port.inWaiting() < 31:
 				a = 0
-			data = ser.read(31)
+			data = serial_port.read(31)
 			if valid_check_sum(data):
 				time_data_tuple = ((time.time()-initial_time),data)
 				queue.put(time_data_tuple)
 
+# Gets (time,data) tuple from queue and print to screen
+# Precondition: queue is from multiprocessing.Queue
 def read_data(queue):
 	while True:
 		if not queue.empty():
@@ -83,10 +90,10 @@ data_reader.daemon = True
 data_reader.start()        
 
 #Set the IMU to continuously send data about Euler Angles and Angular Rate
-set_continuous_euler_ang()
+set_continuous_euler_ang(ser)
 
 #Write the output from the IMU onto the queue
-write_data(queue)
+write_data(ser, queue)
 
 
 
