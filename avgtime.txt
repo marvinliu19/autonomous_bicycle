@@ -1,0 +1,6 @@
+Average Time in Between Data
+
+Test		Time(ms)
+1			131.507641
+2			145.62665
+3			137.253898

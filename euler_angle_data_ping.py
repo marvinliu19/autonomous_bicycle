@@ -43,13 +43,32 @@ def valid_check_sum(data):
 
 # Puts data from IMU onto queue as a tuple of (time,data)
 # Precondition: queue is from multiprocessing.Queue
+def get_data(serial_port):
+	initial_time = time.time()
+	if serial_port.isOpen():
+		while True:
+			ser.write("\xCF")
+			if (serial_port.inWaiting() < 31):
+				continue
+			data = serial_port.read(31)
+			if valid_check_sum(data):
+				time_elasped = time.time()-initial_time
+				roll = imu_convert(bit_check(data[1:5]))
+				pitch = imu_convert(bit_check(data[5:9]))
+				yaw = imu_convert(bit_check(data[9:13]))
+				print('Time: %f Roll: %f  Pitch: %f  Yaw: %f'%(time_elasped,roll,pitch,yaw))
+
+# Puts data from IMU onto queue as a tuple of (time,data)
+# Precondition: queue is from multiprocessing.Queue
 def write_data(serial_port, queue):
 	initial_time = time.time()
 	if serial_port.isOpen():
 		print "Serial Status: Open"
 		while True:
+			#ser.write("\xCF")
 			if (serial_port.inWaiting() < 31):
-				continue
+				print "Insufficient Data"
+				time.sleep(0.5)
 			data = serial_port.read(31)
 			if valid_check_sum(data):
 				#time_data_tuple = ((time.time()-initial_time),data)
@@ -75,19 +94,16 @@ def read_data(queue):
 			print('Time:%f  Roll:%f  Pitch:%f  Yaw:%f'%(time_put,roll,pitch,yaw))
 
 #Create a queue that will hold (time,data) tuples
-queue = Queue()
+#queue = Queue()
 
 #Create a seperate process to read the data
 #data_reader = Process(target=read_data, args=((queue),))
 #data_reader.daemon = True
 #data_reader.start()        
 
-#Set the IMU to continuously send data about Euler Angles and Angular Rate
-set_continuous = "\xC4\xC1\x29\xCF"
-ser.write(set_continuous)
-
 #Write the output from the IMU onto the queue
-write_data(ser, queue)
+get_data(ser)
+#write_data(ser, queue)
 
 #xang = imu_convert(bit_check(data[13:17]))
 #yang = imu_convert(bit_check(data[17:21]))
