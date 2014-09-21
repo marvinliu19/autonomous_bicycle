@@ -27,8 +27,8 @@ def bit_check(a):
 	return c 
 
 def imu_convert(a):
-	d = struct.unpack('!f', a.decode('hex'))[0]
-	return d
+	data = struct.unpack('!f', a.decode('hex'))[0]
+	return data
 
 # Checks if data has a valid check sum
 # Precondition: data is a string containing 31 bytes
