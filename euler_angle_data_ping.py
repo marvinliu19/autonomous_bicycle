@@ -1,5 +1,5 @@
 #Written by Marvin Liu
-#start 10:45
+#Uses pinging to continuously print euler angle data
 #import Adafruit_BBIO.UART as UART
 import serial
 import time
@@ -43,7 +43,7 @@ def valid_check_sum(data):
 
 # Puts data from IMU onto queue as a tuple of (time,data)
 # Precondition: queue is from multiprocessing.Queue
-def get_data(serial_port):
+def print_data(serial_port):
 	initial_time = time.time()
 	if serial_port.isOpen():
 		while True:
@@ -93,20 +93,7 @@ def read_data(queue):
 			yaw = imu_convert(bit_check(data[9:13]))
 			print('Time:%f  Roll:%f  Pitch:%f  Yaw:%f'%(time_put,roll,pitch,yaw))
 
-#Create a queue that will hold (time,data) tuples
-#queue = Queue()
+print_data(ser)
 
-#Create a seperate process to read the data
-#data_reader = Process(target=read_data, args=((queue),))
-#data_reader.daemon = True
-#data_reader.start()        
-
-#Write the output from the IMU onto the queue
-get_data(ser)
-#write_data(ser, queue)
-
-#xang = imu_convert(bit_check(data[13:17]))
-#yang = imu_convert(bit_check(data[17:21]))
-#zang = imu_convert(bit_check(data[21:25]))
 		
 	

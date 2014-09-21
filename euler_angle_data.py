@@ -1,5 +1,5 @@
 #Written by Marvin Liu
-#start 10:45
+#Attempts to use queue for euler angle data
 #import Adafruit_BBIO.UART as UART
 import serial
 import time
