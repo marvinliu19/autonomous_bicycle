@@ -1,6 +1,6 @@
 # Written by Marvin Liu
-# Use queue with pinging
-# Start at 3:45
+# Use queue with polling
+# Best version so far
 
 #import Adafruit_BBIO.UART as UART
 import serial
@@ -26,6 +26,7 @@ def bit_check(a):
 		c = c+b
 	return c 
 
+# Converts 4 bytes into a floating point number
 def imu_convert(a):
 	data = struct.unpack('!f', a.decode('hex'))[0]
 	return data
@@ -52,26 +53,24 @@ def write_data(serial_port, queue):
 		if (serial_port.inWaiting() < 31):
 			continue
 		data = serial_port.read(31)
+		
 		if valid_check_sum(data):
-			#time_elasped = time.time()-initial_time
-			#queue.put((time_elasped,data))
-			serial_port_size = serial_port.inWaiting()
-			queue.put((serial_port_size,data))
+			time_elasped = time.time()-initial_time
+			queue.put((time_elasped,data))
 
 # Gets (time,data) tuple from queue and print to screen
 # Precondition: queue is from multiprocessing.Queue
 def read_data(queue):
 	while True:
 		data_tuple = queue.get()
-		#time_elasped = data_tuple[0]
-		ser_size = data_tuple[0]
+		time_elasped = data_tuple[0]
 		data = data_tuple[1]
+		# roll = bit_check(data[1:5])
 		roll = imu_convert(bit_check(data[1:5]))
 		pitch = imu_convert(bit_check(data[5:9]))
 		yaw = imu_convert(bit_check(data[9:13]))
-		#print('Time:%f  Roll:%f  Pitch:%f  Yaw:%f'%(time_elasped,roll,pitch,yaw))
-		#print('Size: %i  Roll:%f  Pitch:%f  Yaw:%f'%(queue.qsize(),roll,pitch,yaw))
-		print('Size: %i  Roll:%f  Pitch:%f  Yaw:%f'%(ser_size,roll,pitch,yaw))
+		print('Time: %f  Roll: %s  Pitch: %f  Yaw: %f'%(time_elasped,roll,pitch,yaw))
+
 
 if ser.isOpen():
 	#Create a queue that will hold (time,data) tuples
