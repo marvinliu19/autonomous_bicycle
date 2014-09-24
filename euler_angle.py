@@ -1,19 +1,16 @@
-# Written by Marvin Liu
-# Use queue with polling
-# Best version so far
+# Written by Marvin Liu 
+# Polls IMU continuously for euler angle data
 
-#import Adafruit_BBIO.UART as UART
+import Adafruit_BBIO.UART as UART
 import serial
 import time
 import struct 
 from multiprocessing import Process, Queue
 
-#UART.setup("UART4")
+UART.setup("UART4")
 
 # Initialize serial port
-# Use port /dev/ttyUSB0 for serial USB connection on laptop
-# Use port /dev/ttyO4 for BeagleBone Black
-ser = serial.Serial(port = "/dev/ttyUSB0", baudrate=115200, 
+ser = serial.Serial(port = "/dev/ttyO4", baudrate=115200, 
 parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, 
 bytesize=serial.EIGHTBITS, timeout=0, xonxoff=0, rtscts=0)
 
@@ -57,7 +54,9 @@ def write_data(serial_port, queue):
 		if valid_check_sum(data):
 			time_elasped = time.time()-initial_time
 			queue.put((time_elasped,data))
-
+		else:
+			print "Invalid Data"
+		
 # Gets (time,data) tuple from queue and print to screen
 # Precondition: queue is from multiprocessing.Queue
 def read_data(queue):
@@ -71,7 +70,6 @@ def read_data(queue):
 		yaw = imu_convert(bit_check(data[9:13]))
 		print('Time: %f  Roll: %s  Pitch: %f  Yaw: %f'%(time_elasped,roll,pitch,yaw))
 
-
 if ser.isOpen():
 	#Create a queue that will hold (time,data) tuples
 	queue = Queue()
@@ -82,5 +80,6 @@ if ser.isOpen():
 	
 	#Write the output from the IMU onto the queue
 	write_data(ser, queue)
+
 else:
 	print "Error: Serial port not open"
