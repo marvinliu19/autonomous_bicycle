@@ -1,4 +1,3 @@
-# Written by Marvin Liu 
 # Polls IMU continuously for euler angle data
 
 import Adafruit_BBIO.UART as UART
@@ -47,8 +46,8 @@ def write_data(serial_port, queue):
 	initial_time = time.time()
 	while True:
 		ser.write("\xCF")
-		if (serial_port.inWaiting() < 31):
-			continue
+		while (serial_port.inWaiting() < 31):
+			pass
 		data = serial_port.read(31)
 		
 		if valid_check_sum(data):

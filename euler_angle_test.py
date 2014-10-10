@@ -45,37 +45,37 @@ def valid_check_sum(data):
 # Precondition: queue is from multiprocessing.Queue
 def write_data(serial_port, queue):
 	initial_time = time.time()
-	#invalid_data = 0
-	#valid_data = 0
+	invalid_data = 0
+	valid_data = 0
 	
 	while True:
-		ser.write("\xCF")
-		if (serial_port.inWaiting() < 31):
-			continue
+		serial_port.write("\xCF")
+		while (serial_port.inWaiting() < 31):
+			pass
 		data = serial_port.read(31)
 		
 		if valid_check_sum(data):
-			#valid_data = valid_data + 1
+			valid_data = valid_data + 1
 			time_elasped = time.time()-initial_time
-			#percent_valid = (float(valid_data)/float(valid_data+invalid_data)) * 100
-			queue.put((time_elasped,data))
+			percent_valid = (float(valid_data)/float(valid_data+invalid_data)) * 100
+			queue.put((percent_valid, time_elasped,data,))
 		
-		#else:
-			#invalid_data = invalid_data + 1
+		else:
+			invalid_data = invalid_data + 1
 		
 # Gets (time,data) tuple from queue and print to screen
 # Precondition: queue is from multiprocessing.Queue
 def read_data(queue):
 	while True:
 		data_tuple = queue.get()
-		#percent_valid = data_tuple[0]
-		time_elasped = data_tuple[0]
-		data = data_tuple[1]
+		percent_valid = data_tuple[0]
+		time_elasped = data_tuple[1]
+		data = data_tuple[2]
 		roll = imu_convert(bit_check(data[1:5]))
 		#yaw = imu_convert(bit_check(data[9:13]))
 		#print('Accuracy: %.4f  Interval: %.4f  Time: %.4f  Roll: %s '%(percent_valid, time_dif, time_elasped,roll))
-		#print('%.4f %.4f %f'%(time_elasped, percent_valid, roll))
-		print('%.4f %f'%(time_elasped, roll))
+		print('%.4f %.4f %f'%(time_elasped, percent_valid, roll))
+		
 
 if ser.isOpen():
 	#Create a queue that will hold (time,data) tuples
