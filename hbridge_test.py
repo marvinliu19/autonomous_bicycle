@@ -1,6 +1,5 @@
 import Adafruit_BBIO.PWM as PWM
 import Adafruit_BBIO.ADC as ADC
-from itertools import cycle
 import time
 from multiprocessing import Process
 
