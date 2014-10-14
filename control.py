@@ -1,10 +1,9 @@
 # Main control for the robotic bicycle
 import Adafruit_BBIO.UART as UART
-import Adafruit_BBIO.ADC as ADC
 import serial
 import time
-import struct
 import imu 
+import potentiometer
 
 # Constants
 PERIOD = 0.1 		# Seconds per calculation cycle
@@ -15,14 +14,6 @@ UART.setup("UART4")
 imu_serial_port = serial.Serial(port = "/dev/ttyO4", baudrate=115200, 
 	parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, 
 	bytesize=serial.EIGHTBITS, timeout=0, xonxoff=0, rtscts=0)
-
-###############################################################################
-
-# Reads a voltage from the potentiometer between 0 and 1
-# Multiplies it by 360 to get an angle
-# Returns the current angle of the steering motor
-def read_steer_angle():
-	return ADC.read(POT_PIN)*360
 
 ###############################################################################
 
