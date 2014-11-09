@@ -37,7 +37,7 @@ class MotorController:
   # Postcondition: returns a value in the range [0,180)
   # @param: angle_error - the difference between target angle and current angle
   # @return: the new angle error after motor direction is changed
-  def set_dir_angle_error(angle_error):
+  def set_dir_angle_error(self, angle_error):
     if angle_error < 0:
       if abs(angle_error) < 180:
         PWM.set_duty_cycle(self.dir_pin, self.REVERSE)
@@ -67,22 +67,22 @@ class MotorController:
   # @param: del_e - the change in angle error since the last cycle
   # @param: t - the start time of the cycle
   # @return: an output duty cycle 
-  def calc_motor_output(e, del_e, t):
-    return self.KP*(e+(self.KI*self.q)+(self.KD*(del_e/(time.time()-t))))
+  def calc_motor_output(self, e, del_e, t):
+    return self.kp*(e+(self.ki*self.q)+(self.kd*(del_e/(time.time()-t))))
   
   # Sets the duty cycle and direction of the motor to reach the target angle
   # Precondition: target_angle in the range [0,360)
   # @param: target_angle - the angle the controller is trying to reach
   # @param: start_time - the time when the function is called
-  def control_motor(target_angle, start_time):
-    angle_error = set_dir_angle_error(target_angle - self.pot.read_angle())
+  def control_motor(self, target_angle, start_time):
+    angle_error = self.set_dir_angle_error(target_angle - self.pot.get_angle())
     delta_error = abs(angle_error - self.prev_error)
      
     self.q = min(self.q + (time.time()-start_time)*angle_error, self.qmax)
-    anti_windup()
+    self.anti_windup()
   
-    output_duty = min(calc_motor_output(angle_error,delta_error,start_time),100)
-    print_state(pot, output_duty)
+    output_duty = min(self.calc_motor_output(angle_error,delta_error,start_time),100)
+    self.print_state(output_duty)
     
     #Update variables
     self.duty = output_duty
@@ -94,4 +94,4 @@ class MotorController:
   # @param: output_duty - the output duty cycle calculated
   def print_state(self, output_duty):
     print "Output duty: %f"%(output_duty)
-    print"%f"%(self.pot.read_angle()*360)
+    print"%f"%(self.pot.get_angle())

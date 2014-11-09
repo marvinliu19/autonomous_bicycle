@@ -16,7 +16,7 @@ POT_PIN = 'P9_40'	# Input pin on BeagleBone Black for potentiometer
 
 # Motor Constants
 DIR_PIN = "P8_19"
-DUTY_PIN = "P9_13"
+DUTY_PIN = "P8_13"
 KP = 0.15
 KI = 0
 KD = 0.001
@@ -40,11 +40,11 @@ motor = pid.MotorController(pot, DIR_PIN, DUTY_PIN, KP, KI, KD, QMAX)
 
 def control_cycle(start_time):
 	lean_angle = imu.get_roll_angle(imu_serial_port)
-	steer_angle = pot.get_steer_angle()
+	steer_angle = pot.get_angle()
 	
 	# Output to motor
-	target_angle = math.degrees(lean) + 180
-	motor.control_motor(target_anglepw, time.time())			
+	target_angle = math.degrees(lean_angle) + 180
+	motor.control_motor(target_angle, time.time())			
 	
 	# Calculate left over time to wait
 	extra_time = PERIOD - (time.time() - start_time)

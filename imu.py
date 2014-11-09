@@ -33,7 +33,7 @@ def valid_check_sum(data):
 # Return: roll angle value between -pi and pi 
 def get_roll_angle(serial_port):
 	while True:
-		ser.write("\xCF")
+		serial_port.write("\xCF")
 		while (serial_port.inWaiting() < 31):
 			pass
 		data = serial_port.read(31)

@@ -11,25 +11,8 @@ ADC.setup()
 direction_pin = "P8_19"
 duty_cycle_pin = "P8_13"
 
-# PWM.start(direction_pin, 100)
-# PWM.start(duty_cycle_pin, 100)
-
-change_direction_delay = 2
-
-# Reverse the direction every t seconds
-def control_motor(t):
-	# Start PWM signals
-	PWM.start(direction_pin, 100)
-	PWM.start(duty_cycle_pin, 50)
-	while True:
-		time.sleep(t)
-		PWM.set_duty_cycle(direction_pin, 0)
-		time.sleep(t)
-		PWM.set_duty_cycle(direction_pin, 100)
-	
-motor_control = Process(target=control_motor, args=(change_direction_delay,))
-motor_control.daemon = True
-motor_control.start()
+PWM.start(direction_pin, 100)
+PWM.start(duty_cycle_pin, 25)
 
 count = 0
 while count < 2000:
