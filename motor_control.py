@@ -1,7 +1,6 @@
 import Adafruit_BBIO.PWM as PWM
 import Adafruit_BBIO.ADC as ADC
 import time
-from multiprocessing import Process
 
 # Input pin from the potentiometer
 potentiometer = 'P9_40'

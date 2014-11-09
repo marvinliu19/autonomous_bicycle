@@ -1,8 +1,6 @@
 # Module for communication with the potentiometer
 import Adafruit_BBIO.ADC as ADC
 
-ADC.setup()
-
 # Class that holds the current potentiometer data
 # Method get_steer_angle() returns the current steer angle
 class Potentiometer:
@@ -10,7 +8,8 @@ class Potentiometer:
 		self.SMOOTH = 0.8 # Closer to 1 means less smoothing
 		self.pin = pin
 		self.data = get_initial_value()
-		
+		ADC.setup()
+
 	# Averages four readings to get starting value for the exponential filter
 	# @param pin: GPIO pin for the potentiometer
 	# Return: average of four potentiometer readings
@@ -26,12 +25,8 @@ class Potentiometer:
 	def read_angle():
 		return ADC.read(self.pin)*360
 
+	# Returns the current steer angle with exponential filtering	
 	def get_steer_angle(self): 
 		self.data = self.SMOOTH*read_angle() + (1-self.SMOOTH)*self.data
 		return self.data
 
-if __name__ == '__main__':
-	pot = Potentiometer('P9_40')
-	for x in range(0,1000)
-		print "%f"%(pot.get_steer_angle())
-		
