@@ -3,7 +3,7 @@ import time
 
 # A proportional-integral-derivative controller for the steering motor
 class MotorController:
-  # Creates a new motor controller object
+  # Creates a new MotorController object
   # @param: pot - a Potentiometer object used to get the current steer angle
   # @param: dir_pin - output pin on BeagleBone that controls motor direction
   # @param: duty_pin - output pin on BeagleBone that controls duty cycle
@@ -27,8 +27,8 @@ class MotorController:
     self.counter = 0
     self.prev_error = 0
 
-    PWM.start(self.dir_pin, 100)
-    PWM.start(self.duty_pin, 0)
+    PWM.start(self.dir_pin, 100, 20000, 0)
+    PWM.start(self.duty_pin, 0, 20000, 0)
 
   # Sets the motor in the direction of shortest path to correct the angle error
   # Changes the angle error to be in the range [0,180)
@@ -54,7 +54,6 @@ class MotorController:
         return angle_error - 180
 
   # Prevents windup in the integral controller
-  # Resets q to 0 after 3 calls to anti_windup
   def anti_windup(self):
     self.counter = self.counter + 1
     if self.counter == 3:
@@ -63,30 +62,29 @@ class MotorController:
   
   # Calculates a output duty cycle using the PID control 
   # Can return numbers > 100 or < 0
-  # @param: e - the angle error
-  # @param: del_e - the change in angle error since the last cycle
+  # @param: e - the error
+  # @param: del_e - the change in error since the last cycle
   # @param: t - the start time of the cycle
   # @return: an output duty cycle 
   def calc_motor_output(self, e, del_e, t):
     return self.kp*(e+(self.ki*self.q)+(self.kd*(del_e/(time.time()-t))))
   
-  # Sets the duty cycle and direction of the motor to reach the target angle
-  # Precondition: target_angle in the range [0,360)
-  # @param: target_angle - the angle the controller is trying to reach
+  # Sets the duty cycle and direction of the motor to reach the target velocity
+  # @param: target_velocity - the velocity the controller is trying to reach
   # @param: start_time - the time when the function is called
-  def control_motor(self, target_angle, start_time):
-    angle_error = self.set_dir_angle_error(target_angle - self.pot.get_angle())
-    delta_error = abs(angle_error - self.prev_error)
+  def control_motor(self, target_velocity, start_time):
+    vel_error = target_velocity - self.pot.get_velocity()
+    delta_error = abs(vel_error - self.prev_error)
      
-    self.q = min(self.q + (time.time()-start_time)*angle_error, self.qmax)
+    self.q = min(self.q + (time.time()-start_time)*vel_error, self.qmax)
     self.anti_windup()
   
-    output_duty = min(self.calc_motor_output(angle_error,delta_error,start_time),100)
+    output_duty = min(self.calc_motor_output(vel_error,delta_error,start_time),100)
     self.print_state(output_duty)
     
     #Update variables
     self.duty = output_duty
-    self.prev_error = angle_error
+    self.prev_error = vel_error
   
     PWM.set_duty_cycle(self.duty_pin, output_duty)
   
@@ -94,4 +92,4 @@ class MotorController:
   # @param: output_duty - the output duty cycle calculated
   def print_state(self, output_duty):
     print "Output duty: %f"%(output_duty)
-    print"%f"%(self.pot.get_angle())
+    print"Position: %f\tVelocity: %f"%(self.pot.get_angle(), self.pot.get_velocity())

@@ -1,3 +1,5 @@
+#Shuts down the steering motor output pins
+
 import Adafruit_BBIO.PWM as PWM
 
 duty_cycle_pin = "P8_13"
