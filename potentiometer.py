@@ -21,7 +21,8 @@ def read_angle(pin):
 # Class that holds the current potentiometer data
 class Potentiometer:
 	# Creates a new Potentiometer object
-	# @param: pin - GPIO pin for the potentiometer
+	# @param: pos_pin - AIN pin that measures the position of the potentiometer
+	# @param: vel_pin - AIN pin that measures the velocity of the potentiometer
 	# @return: potentiometer with exponential filter smoothing constant of 0.8
 	def __init__(self,pos_pin, vel_pin):
 		ADC.setup()
@@ -30,12 +31,12 @@ class Potentiometer:
 		self.vel_pin = vel_pin
 		self.data = get_initial_value(self.pin)
 		
-	# Reads the current angle of the potentiometer
+	# Reads the current angle of the potentiometer in radians
 	# @return: current angle of the potentiometer
 	def get_angle(self):
 		return ADC.read(self.pos_pin) * 2 * math.pi
 
-	# Reads the current angular velocity of the potentiometer
+	# Reads the current angular velocity of the potentiometer in radians/second
 	# @return: current angular velocity of the potentiometer
 	# Resting value: 0.896 / 1.8
 	def get_velocity(self):
